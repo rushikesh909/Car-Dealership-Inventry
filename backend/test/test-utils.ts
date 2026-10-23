@@ -1,3 +1,22 @@
+import * as dotenv from 'dotenv';
+import * as path from 'path';
+
+dotenv.config({ path: path.resolve(__dirname, '../.env.test') });
+if (!process.env.DATABASE_URL) {
+  dotenv.config({ path: path.resolve(__dirname, '../.env') });
+}
+if (!process.env.DATABASE_URL) {
+  process.env.DATABASE_URL =
+    process.env.TEST_DATABASE_URL ||
+    'postgresql://postgres@127.0.0.1:5434/cardealership_test?schema=public';
+}
+if (!process.env.JWT_SECRET) {
+  process.env.JWT_SECRET = 'test-jwt-secret-key-at-least-32-characters-long';
+}
+if (!process.env.JWT_EXPIRES_IN) {
+  process.env.JWT_EXPIRES_IN = '1d';
+}
+
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from '../src/app.module';
