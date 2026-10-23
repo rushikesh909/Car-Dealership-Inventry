@@ -33,7 +33,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
         error = resObj.error || exception.name;
       }
     } else if (exception instanceof Error) {
-      this.logger.error(`Unhandled Exception: ${exception.message}`, exception.stack);
+      this.logger.error(
+        `Unhandled Exception: ${exception.message}`,
+        exception.stack,
+      );
     }
 
     // Never return stack traces or internal technical details to client

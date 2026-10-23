@@ -51,7 +51,9 @@ export class PrismaVehiclesRepository implements IVehicleRepository {
     };
   }
 
-  async search(filters: SearchVehicleFilters): Promise<PaginatedResult<Vehicle>> {
+  async search(
+    filters: SearchVehicleFilters,
+  ): Promise<PaginatedResult<Vehicle>> {
     const page = filters.page || 1;
     const limit = filters.limit || 10;
     const skip = (page - 1) * limit;
@@ -65,7 +67,10 @@ export class PrismaVehiclesRepository implements IVehicleRepository {
       where.model = { contains: filters.model.trim(), mode: 'insensitive' };
     }
     if (filters.category) {
-      where.category = { contains: filters.category.trim(), mode: 'insensitive' };
+      where.category = {
+        contains: filters.category.trim(),
+        mode: 'insensitive',
+      };
     }
     if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
       where.price = {};
@@ -109,7 +114,8 @@ export class PrismaVehiclesRepository implements IVehicleRepository {
     if (data.make !== undefined) updateData.make = data.make;
     if (data.model !== undefined) updateData.model = data.model;
     if (data.category !== undefined) updateData.category = data.category;
-    if (data.price !== undefined) updateData.price = new Prisma.Decimal(data.price);
+    if (data.price !== undefined)
+      updateData.price = new Prisma.Decimal(data.price);
     if (data.quantity !== undefined) updateData.quantity = data.quantity;
 
     return this.prisma.vehicle.update({

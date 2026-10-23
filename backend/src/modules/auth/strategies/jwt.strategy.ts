@@ -20,7 +20,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
       secretOrKey:
-        configService.get<string>('JWT_SECRET') || 'default-fallback-dev-secret-key-min-32-chars',
+        configService.get<string>('JWT_SECRET') ||
+        'default-fallback-dev-secret-key-min-32-chars',
     });
   }
 

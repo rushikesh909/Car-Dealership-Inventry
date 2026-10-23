@@ -17,7 +17,8 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   // CORS configuration from environment allow-list
-  const corsOrigin = configService.get<string>('CORS_ORIGIN') || 'http://localhost:5173';
+  const corsOrigin =
+    configService.get<string>('CORS_ORIGIN') || 'http://localhost:5173';
   app.enableCors({
     origin: corsOrigin.split(',').map((origin) => origin.trim()),
     credentials: true,
@@ -52,7 +53,9 @@ async function bootstrap() {
   const port = configService.get<number>('PORT') || 3000;
   await app.listen(port);
   logger.log(`Application is running on: http://localhost:${port}/api`);
-  logger.log(`Swagger documentation available at: http://localhost:${port}/api/docs`);
+  logger.log(
+    `Swagger documentation available at: http://localhost:${port}/api/docs`,
+  );
 }
 
 bootstrap();

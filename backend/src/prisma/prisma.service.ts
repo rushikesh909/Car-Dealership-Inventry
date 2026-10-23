@@ -2,7 +2,10 @@ import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 
 @Injectable()
-export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
+export class PrismaService
+  extends PrismaClient
+  implements OnModuleInit, OnModuleDestroy
+{
   async onModuleInit() {
     await this.$connect();
   }
@@ -22,7 +25,9 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     for (const { tablename } of tablenames) {
       if (tablename !== '_prisma_migrations') {
         try {
-          await this.$executeRawUnsafe(`TRUNCATE TABLE "public"."${tablename}" CASCADE;`);
+          await this.$executeRawUnsafe(
+            `TRUNCATE TABLE "public"."${tablename}" CASCADE;`,
+          );
         } catch (error) {
           console.error(`Error truncating ${tablename}:`, error);
         }

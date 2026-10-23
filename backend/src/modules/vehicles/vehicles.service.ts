@@ -1,4 +1,9 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   CreateVehicleData,
   IVehicleRepository,
@@ -25,7 +30,9 @@ export class VehiclesService {
     return this.vehiclesRepository.findAll(pagination);
   }
 
-  async search(filters: SearchVehicleFilters): Promise<PaginatedResult<Vehicle>> {
+  async search(
+    filters: SearchVehicleFilters,
+  ): Promise<PaginatedResult<Vehicle>> {
     if (
       filters.minPrice !== undefined &&
       filters.maxPrice !== undefined &&

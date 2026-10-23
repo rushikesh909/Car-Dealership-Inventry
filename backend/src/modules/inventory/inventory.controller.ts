@@ -8,7 +8,12 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { InventoryService } from './inventory.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -26,7 +31,10 @@ export class InventoryController {
   @Post(':id/purchase')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Atomically purchase one unit of a vehicle' })
-  @ApiResponse({ status: 200, description: 'Vehicle purchased successfully, quantity decremented' })
+  @ApiResponse({
+    status: 200,
+    description: 'Vehicle purchased successfully, quantity decremented',
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Vehicle not found' })
   @ApiResponse({ status: 409, description: 'Vehicle is out of stock' })
@@ -37,8 +45,13 @@ export class InventoryController {
   @Post(':id/restock')
   @HttpCode(HttpStatus.OK)
   @Roles(Role.ADMIN) // Admin only endpoint
-  @ApiOperation({ summary: 'Restock vehicle inventory by specified amount (Admin only)' })
-  @ApiResponse({ status: 200, description: 'Vehicle restocked successfully, quantity incremented' })
+  @ApiOperation({
+    summary: 'Restock vehicle inventory by specified amount (Admin only)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Vehicle restocked successfully, quantity incremented',
+  })
   @ApiResponse({ status: 400, description: 'Invalid restock amount' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden - requires ADMIN role' })

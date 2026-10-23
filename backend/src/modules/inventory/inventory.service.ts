@@ -33,7 +33,9 @@ export class InventoryService {
 
   async restock(id: string, amount: number): Promise<Vehicle> {
     if (!amount || amount <= 0 || !Number.isInteger(amount)) {
-      throw new BadRequestException('Restock amount must be a positive integer');
+      throw new BadRequestException(
+        'Restock amount must be a positive integer',
+      );
     }
 
     const vehicle = await this.inventoryRepository.findById(id);

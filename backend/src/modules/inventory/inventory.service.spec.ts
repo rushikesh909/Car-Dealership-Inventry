@@ -1,5 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InventoryService } from './inventory.service';
 import { INVENTORY_REPOSITORY } from './interfaces/inventory-repository.interface';
 import { Decimal } from '@prisma/client/runtime/library';
@@ -50,7 +54,9 @@ describe('InventoryService', () => {
 
       const result = await service.purchase(mockVehicle.id);
       expect(result.quantity).toBe(2);
-      expect(mockInventoryRepo.atomicDecrementStock).toHaveBeenCalledWith(mockVehicle.id);
+      expect(mockInventoryRepo.atomicDecrementStock).toHaveBeenCalledWith(
+        mockVehicle.id,
+      );
     });
 
     it('should throw NotFoundException (404) if vehicle does not exist', async () => {
@@ -58,13 +64,18 @@ describe('InventoryService', () => {
       mockInventoryRepo.findById.mockResolvedValue(null);
 
       await expect(service.purchase('non-existent-id')).rejects.toThrow(
-        new NotFoundException('Vehicle with ID "non-existent-id" was not found'),
+        new NotFoundException(
+          'Vehicle with ID "non-existent-id" was not found',
+        ),
       );
     });
 
     it('should throw ConflictException (409) if vehicle is out of stock (quantity is 0)', async () => {
       mockInventoryRepo.atomicDecrementStock.mockResolvedValue(null);
-      mockInventoryRepo.findById.mockResolvedValue({ ...mockVehicle, quantity: 0 });
+      mockInventoryRepo.findById.mockResolvedValue({
+        ...mockVehicle,
+        quantity: 0,
+      });
 
       await expect(service.purchase(mockVehicle.id)).rejects.toThrow(
         new ConflictException('Vehicle is out of stock'),
@@ -75,11 +86,17 @@ describe('InventoryService', () => {
   describe('restock', () => {
     it('should increment vehicle quantity by given amount', async () => {
       mockInventoryRepo.findById.mockResolvedValue(mockVehicle);
-      mockInventoryRepo.incrementStock.mockResolvedValue({ ...mockVehicle, quantity: 8 });
+      mockInventoryRepo.incrementStock.mockResolvedValue({
+        ...mockVehicle,
+        quantity: 8,
+      });
 
       const result = await service.restock(mockVehicle.id, 5);
       expect(result.quantity).toBe(8);
-      expect(mockInventoryRepo.incrementStock).toHaveBeenCalledWith(mockVehicle.id, 5);
+      expect(mockInventoryRepo.incrementStock).toHaveBeenCalledWith(
+        mockVehicle.id,
+        5,
+      );
     });
 
     it('should throw BadRequestException if restock amount is <= 0', async () => {
@@ -94,7 +111,9 @@ describe('InventoryService', () => {
     it('should throw NotFoundException if vehicle does not exist to restock', async () => {
       mockInventoryRepo.findById.mockResolvedValue(null);
 
-      await expect(service.restock('missing-id', 5)).rejects.toThrow(NotFoundException);
+      await expect(service.restock('missing-id', 5)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });

@@ -19,7 +19,10 @@ describe('HttpExceptionFilter', () => {
       }),
     } as unknown as ArgumentsHost;
 
-    const exception = new HttpException('Forbidden resource', HttpStatus.FORBIDDEN);
+    const exception = new HttpException(
+      'Forbidden resource',
+      HttpStatus.FORBIDDEN,
+    );
 
     filter.catch(exception, mockHost);
 

@@ -73,7 +73,10 @@ describe('VehiclesService', () => {
       const result = await service.findAll({ page: 1, limit: 10 });
       expect(result.data).toHaveLength(1);
       expect(result.meta.total).toBe(1);
-      expect(mockRepository.findAll).toHaveBeenCalledWith({ page: 1, limit: 10 });
+      expect(mockRepository.findAll).toHaveBeenCalledWith({
+        page: 1,
+        limit: 10,
+      });
     });
   });
 
@@ -121,24 +124,33 @@ describe('VehiclesService', () => {
     it('should throw NotFoundException if vehicle not found', async () => {
       mockRepository.findById.mockResolvedValue(null);
 
-      await expect(service.findById('non-existent-id')).rejects.toThrow(NotFoundException);
+      await expect(service.findById('non-existent-id')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
   describe('update', () => {
     it('should update and return vehicle if it exists', async () => {
       mockRepository.findById.mockResolvedValue(mockVehicle);
-      mockRepository.update.mockResolvedValue({ ...mockVehicle, price: new Decimal(45000.0) });
+      mockRepository.update.mockResolvedValue({
+        ...mockVehicle,
+        price: new Decimal(45000.0),
+      });
 
       const result = await service.update(mockVehicle.id, { price: 45000.0 });
       expect(result.price).toEqual(new Decimal(45000.0));
-      expect(mockRepository.update).toHaveBeenCalledWith(mockVehicle.id, { price: 45000.0 });
+      expect(mockRepository.update).toHaveBeenCalledWith(mockVehicle.id, {
+        price: 45000.0,
+      });
     });
 
     it('should throw NotFoundException if vehicle does not exist', async () => {
       mockRepository.findById.mockResolvedValue(null);
 
-      await expect(service.update('missing-id', { price: 100 })).rejects.toThrow(NotFoundException);
+      await expect(
+        service.update('missing-id', { price: 100 }),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -154,7 +166,9 @@ describe('VehiclesService', () => {
     it('should throw NotFoundException if vehicle does not exist to delete', async () => {
       mockRepository.findById.mockResolvedValue(null);
 
-      await expect(service.delete('missing-id')).rejects.toThrow(NotFoundException);
+      await expect(service.delete('missing-id')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });

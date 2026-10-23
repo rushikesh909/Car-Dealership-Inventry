@@ -15,7 +15,9 @@ import { JwtStrategy } from './strategies/jwt.strategy';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        secret: config.get<string>('JWT_SECRET') || 'default-fallback-dev-secret-key-min-32-chars',
+        secret:
+          config.get<string>('JWT_SECRET') ||
+          'default-fallback-dev-secret-key-min-32-chars',
         signOptions: {
           expiresIn: config.get<string>('JWT_EXPIRES_IN') || '1d',
         },

@@ -60,7 +60,9 @@ describe('AuthService', () => {
         password: 'Password123!',
       });
 
-      expect(mockUsersService.findByEmail).toHaveBeenCalledWith('test@example.com');
+      expect(mockUsersService.findByEmail).toHaveBeenCalledWith(
+        'test@example.com',
+      );
       expect(mockUsersService.create).toHaveBeenCalledWith(
         expect.objectContaining({
           email: 'test@example.com',
@@ -70,7 +72,9 @@ describe('AuthService', () => {
       // Password must be hashed
       const createCall = mockUsersService.create.mock.calls[0][0];
       expect(createCall.passwordHash).not.toBe('Password123!');
-      expect(await bcrypt.compare('Password123!', createCall.passwordHash)).toBe(true);
+      expect(
+        await bcrypt.compare('Password123!', createCall.passwordHash),
+      ).toBe(true);
 
       // Never expose passwordHash in response
       expect((result as any).passwordHash).toBeUndefined();

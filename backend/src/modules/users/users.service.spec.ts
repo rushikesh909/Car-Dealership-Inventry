@@ -45,7 +45,9 @@ describe('UsersService', () => {
 
       const result = await service.findByEmail('test@example.com');
       expect(result).toEqual(mockUser);
-      expect(mockUsersRepository.findByEmail).toHaveBeenCalledWith('test@example.com');
+      expect(mockUsersRepository.findByEmail).toHaveBeenCalledWith(
+        'test@example.com',
+      );
     });
 
     it('should return null if user is not found', async () => {
@@ -53,6 +55,28 @@ describe('UsersService', () => {
 
       const result = await service.findByEmail('notfound@example.com');
       expect(result).toBeNull();
+    });
+  });
+
+  describe('findById', () => {
+    it('should return a user if found by id', async () => {
+      const mockUser = {
+        id: '123e4567-e89b-12d3-a456-426614174000',
+        email: 'test@example.com',
+        passwordHash: 'hashedSecret',
+        role: Role.USER,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      mockUsersRepository.findById.mockResolvedValue(mockUser);
+
+      const result = await service.findById(
+        '123e4567-e89b-12d3-a456-426614174000',
+      );
+      expect(result).toEqual(mockUser);
+      expect(mockUsersRepository.findById).toHaveBeenCalledWith(
+        '123e4567-e89b-12d3-a456-426614174000',
+      );
     });
   });
 

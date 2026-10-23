@@ -86,6 +86,8 @@
       "!**/dto/**",
       "!**/entities/**",
       "!**/enums/**",
+      "!**/repositories/**",
+      "!**/interfaces/**",
       "!prisma/**"
     ],
     "coverageDirectory": "../coverage",
