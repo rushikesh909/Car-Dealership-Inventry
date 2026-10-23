@@ -120,6 +120,7 @@ describe('AuthService', () => {
           email: 'valid@example.com',
           role: Role.USER,
         }),
+        { expiresIn: '1d' },
       );
     });
 
