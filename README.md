@@ -26,7 +26,7 @@ A production-quality, full-stack vehicle inventory and sales management platform
 4. [Prerequisites](#prerequisites)
 5. [Step-by-Step Local Setup](#step-by-step-local-setup)
    - [Option A: Docker Compose (Recommended)](#option-a-docker-compose-recommended)
-   - [Option B: Native Setup (Local Node & PostgreSQL)](#option-b-native-setup-local-node--postgresql)
+   - [Option B: Native Setup (Local Node & MongoDB)](#option-b-native-setup-local-node--mongodb)
 6. [API Specification & Endpoints](#api-specification--endpoints)
 7. [Testing & Verification](#testing--verification)
    - [Running Backend Tests](#running-backend-tests)
@@ -73,7 +73,7 @@ The backend is built following strict **SOLID** principles, NestJS Modular Domai
 | **Styling & UI** | Tailwind CSS | Utility-first CSS, mobile-first responsive grid layouts, accessible focus states, and bespoke loading skeletons. |
 | **Form Handling** | React Hook Form | High-performance uncontrolled form inputs, minimal re-renders, and synchronous schema-based field validation. |
 | **Client HTTP** | Axios + Interceptors | Centralized JWT attachment on every outbound request, automatic response transformation, and centralized `401 Unauthorized` redirect handling. |
-| **Testing** | Jest + Supertest (Backend), Vitest + RTL (Frontend) | Real PostgreSQL E2E testing with database isolation, concurrent stress tests, and isolated component interaction testing. |
+| **Testing** | Jest + Supertest (Backend), Vitest + RTL (Frontend) | Real MongoDB E2E testing with database isolation, concurrent stress tests, and isolated component interaction testing. |
 
 ---
 
@@ -209,7 +209,7 @@ npm test
 # Run unit tests with coverage report (target >= 90%)
 npm run test:cov
 
-# Run E2E integration tests against PostgreSQL test database
+# Run E2E integration tests against MongoDB test database
 npm run test:e2e
 ```
 
@@ -288,13 +288,13 @@ To capture real, authentic screenshots for your portfolio or grading submission,
 2. **Strict Test-Driven Development (TDD):**
    - Implemented separate atomic commits in the order of `test:` (RED) -> `feat:` (GREEN) -> `refactor:`.
    - Formulated comprehensive edge cases: race condition testing, zero-stock collision, route precedence verification, and mass assignment protection.
-3. **Database & Infrastructure Provisioning:** Configured dual-database PostgreSQL architecture (app and test isolated databases), automated Prisma migration scripts, and multi-stage Dockerfiles.
+3. **Database & Infrastructure Provisioning:** Configured MongoDB architecture with replica set for atomicity, automated Prisma schema synchronization, and multi-stage Dockerfiles.
 
 ### Reflection & Workflow Impact
 - **Productivity & Speed:** Scaffolding type-safe NestJS modules with corresponding DTOs, guards, and services was accelerated significantly without cutting corners on test coverage.
 - **Architectural Rigor:** AI paired programming forced strict adherence to test-first methodology. Writing failing unit and Supertest integration tests prior to business logic prevented false-positive green tests.
 - **Personalized Notes:**  
-  *[USER TO PERSONALIZE: Add 2-3 sentences reflecting on your personal experience pairing with AI during this kata, e.g., how reviewing AI-generated concurrency tests helped you understand PostgreSQL conditional row-locking or how Tailwind skeletons improved UX.]*
+  *[USER TO PERSONALIZE: Add 2-3 sentences reflecting on your personal experience pairing with AI during this kata, e.g., how reviewing AI-generated concurrency tests helped you understand MongoDB atomic document updates ($inc) or how Tailwind skeletons improved UX.]*
 
 ---
 
@@ -307,5 +307,5 @@ To capture real, authentic screenshots for your portfolio or grading submission,
    - *Current Implementation:* Vehicle purchases atomically decrement inventory quantity directly on the `Vehicle` table.
    - *Next Steps:* Create a dedicated `Transaction` / `Order` table to preserve historical buyer records, timestamped transaction amounts, and receipt IDs.
 3. **Multi-Region Database Read Replicas:**
-   - *Current Implementation:* Single PostgreSQL primary instance handles both read queries and write updates.
+   - *Current Implementation:* Single MongoDB primary replica handles both read queries and write updates.
    - *Next Steps:* Configure Prisma read replicas for high-throughput search queries across distributed geographic nodes.
