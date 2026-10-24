@@ -6,7 +6,6 @@ import {
 } from '@nestjs/common';
 import { InventoryService } from './inventory.service';
 import { INVENTORY_REPOSITORY } from './interfaces/inventory-repository.interface';
-import { Decimal } from '@prisma/client/runtime/library';
 
 describe('InventoryService', () => {
   let service: InventoryService;
@@ -17,7 +16,7 @@ describe('InventoryService', () => {
     make: 'Honda',
     model: 'Civic',
     category: 'Sedan',
-    price: new Decimal(25000.0),
+    price: 25000.0,
     quantity: 3,
     createdAt: new Date(),
     updatedAt: new Date(),

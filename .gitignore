@@ -35,6 +35,7 @@ Thumbs.db
 
 # Database local data
 .db_data/
+.mongo_data/
 pgdata/
 pgdata_dev/
 pgdata_test/

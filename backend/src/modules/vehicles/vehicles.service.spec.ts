@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { VehiclesService } from './vehicles.service';
 import { VEHICLES_REPOSITORY } from './interfaces/vehicles-repository.interface';
-import { Decimal } from '@prisma/client/runtime/library';
 
 describe('VehiclesService', () => {
   let service: VehiclesService;
@@ -13,7 +12,7 @@ describe('VehiclesService', () => {
     make: 'Toyota',
     model: 'Supra',
     category: 'Sports',
-    price: new Decimal(43540.0),
+    price: 43540.0,
     quantity: 4,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -135,11 +134,11 @@ describe('VehiclesService', () => {
       mockRepository.findById.mockResolvedValue(mockVehicle);
       mockRepository.update.mockResolvedValue({
         ...mockVehicle,
-        price: new Decimal(45000.0),
+        price: 45000.0,
       });
 
       const result = await service.update(mockVehicle.id, { price: 45000.0 });
-      expect(result.price).toEqual(new Decimal(45000.0));
+      expect(result.price).toEqual(45000.0);
       expect(mockRepository.update).toHaveBeenCalledWith(mockVehicle.id, {
         price: 45000.0,
       });

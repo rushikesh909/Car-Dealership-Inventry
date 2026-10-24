@@ -15,23 +15,10 @@ export class PrismaService
   }
 
   /**
-   * Cleans all database tables between test suites to ensure test isolation and idempotency.
+   * Cleans all database collections between test suites to ensure test isolation and idempotency.
    */
   async cleanDatabase() {
-    const tablenames = await this.$queryRaw<Array<{ tablename: string }>>`
-      SELECT tablename FROM pg_tables WHERE schemaname='public' AND tablename != '_prisma_migrations';
-    `;
-
-    for (const { tablename } of tablenames) {
-      if (tablename !== '_prisma_migrations') {
-        try {
-          await this.$executeRawUnsafe(
-            `TRUNCATE TABLE "public"."${tablename}" CASCADE;`,
-          );
-        } catch (error) {
-          console.error(`Error truncating ${tablename}:`, error);
-        }
-      }
-    }
+    await this.vehicle.deleteMany({});
+    await this.user.deleteMany({});
   }
 }

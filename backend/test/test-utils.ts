@@ -8,7 +8,7 @@ if (!process.env.DATABASE_URL) {
 if (!process.env.DATABASE_URL) {
   process.env.DATABASE_URL =
     process.env.TEST_DATABASE_URL ||
-    'postgresql://postgres@127.0.0.1:5434/cardealership_test?schema=public';
+    'mongodb://127.0.0.1:27017/cardealership_test?replicaSet=rs0&directConnection=true';
 }
 if (!process.env.JWT_SECRET) {
   process.env.JWT_SECRET = 'test-jwt-secret-key-at-least-32-characters-long';

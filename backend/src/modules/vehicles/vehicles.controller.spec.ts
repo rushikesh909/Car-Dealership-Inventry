@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { VehiclesController } from './vehicles.controller';
 import { VehiclesService } from './vehicles.service';
-import { Decimal } from '@prisma/client/runtime/library';
 
 describe('VehiclesController', () => {
   let controller: VehiclesController;
@@ -12,7 +11,7 @@ describe('VehiclesController', () => {
     make: 'Tesla',
     model: 'Model S',
     category: 'Sedan',
-    price: new Decimal(74990.0),
+    price: 74990.0,
     quantity: 3,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -97,7 +96,7 @@ describe('VehiclesController', () => {
   });
 
   it('should update vehicle via service', async () => {
-    const updated = { ...mockVehicle, price: new Decimal(79990.0) };
+    const updated = { ...mockVehicle, price: 79990.0 };
     mockVehiclesService.update.mockResolvedValue(updated);
 
     const result = await controller.update(mockVehicle.id, { price: 79990.0 });

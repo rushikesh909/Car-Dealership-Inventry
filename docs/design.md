@@ -40,9 +40,9 @@ flowchart TD
         InventoryRepository["InventoryRepository"]
     end
 
-    subgraph DatabaseLayer["Data Storage (PostgreSQL 16+)"]
-        PrismaService["PrismaClient (Connection Pool)"]
-        PostgresDB[("PostgreSQL Database")]
+    subgraph DatabaseLayer["Data Storage (MongoDB 7.0+ / 9.0 Replica Set)"]
+        PrismaService["PrismaClient (MongoDB Connection)"]
+        MongoDB[("MongoDB Database")]
     end
 
     AxiosClient -->|HTTP / REST| SecurityMiddleware
@@ -59,7 +59,7 @@ flowchart TD
     VehicleRepository --> PrismaService
     InventoryRepository --> PrismaService
 
-    PrismaService --> PostgresDB
+    PrismaService --> MongoDB
 ```
 
 ### SOLID Principles Applied

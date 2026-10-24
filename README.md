@@ -44,8 +44,8 @@ A production-quality, full-stack vehicle inventory and sales management platform
 
 The backend is built following strict **SOLID** principles, NestJS Modular Domain-Driven architecture, and Dependency Inversion:
 
-- **Layered Decoupling:** `Controller (HTTP Protocol)` -> `Service (Domain Business Logic)` -> `Repository (Data Access Abstraction)` -> `Prisma ORM` -> `PostgreSQL`.
-- **Atomic Concurrency Protection:** Race-safe single conditional SQL decrements ensure parallel purchase transactions cannot oversell stock or drop inventory below zero (`quantity: { decrement: 1 } WHERE quantity > 0`).
+- **Layered Decoupling:** `Controller (HTTP Protocol)` -> `Service (Domain Business Logic)` -> `Repository (Data Access Abstraction)` -> `Prisma ORM` -> `MongoDB`.
+- **Atomic Concurrency Protection:** Race-safe single conditional document updates ensure parallel purchase transactions cannot oversell stock or drop inventory below zero (`quantity: { decrement: 1 } WHERE quantity > 0`).
 - **Route Ordering:** Search route `@Get('search')` is defined ahead of `@Get(':id')` to prevent parameter collision and route masking.
 - **Defensive Error Sanitization:** Global `HttpExceptionFilter` intercepts all runtime errors, strips raw database error messages and stack traces from HTTP responses, and formats a consistent payload shape:
   ```json
@@ -65,7 +65,7 @@ The backend is built following strict **SOLID** principles, NestJS Modular Domai
 | Layer / Concern | Technology | Justification |
 | :--- | :--- | :--- |
 | **Backend Framework** | NestJS + TypeScript | Enterprise-grade structure, inversion of control (DI), first-class support for validation pipes, guards, interceptors, and Swagger OpenAPI. |
-| **Database & ORM** | PostgreSQL + Prisma ORM | ACID compliance, transactional guarantees, type-safe query generation, reliable database migrations, and native atomic conditional updates. In-memory databases were strictly rejected. |
+| **Database & ORM** | MongoDB + Prisma ORM | Real document database engine with native document-level atomicity, type-safe query generation via Prisma, flexible schema indexing, and race-safe conditional updates (`$inc`). In-memory databases were strictly rejected. |
 | **Authentication** | JWT (`@nestjs/jwt` + `passport-jwt`) | Stateless authentication with claims (`sub`, `email`, `role`). Expiry enforced and configurable via environment variables. |
 | **Password Security** | `bcrypt` (10 salt rounds) | Adaptive cryptographic hashing resistant to GPU brute-force attacks. Password hashes are excluded from all DTO responses. |
 | **API Security** | `helmet`, `cors`, `@nestjs/throttler` | Hardened HTTP response headers, explicit domain CORS allow-listing, and tiered rate-limiting (stricter 5 req/min on `/api/auth` to prevent brute-force attacks). |
@@ -106,7 +106,7 @@ In modern Single Page Application (SPA) architectures, client token storage pres
 
 - **Node.js:** v20.x or higher
 - **npm:** v10.x or higher
-- **Docker & Docker Compose:** Required for containerized database services (or local PostgreSQL 16+ instance).
+- **Docker & Docker Compose:** Required for containerized MongoDB service (or local MongoDB 7.0+ / 9.0 instance configured with a replica set).
 
 ---
 
@@ -126,16 +126,16 @@ In modern Single Page Application (SPA) architectures, client token storage pres
    cp .env.example backend/.env
    ```
 
-3. **Start PostgreSQL databases:**
+3. **Start MongoDB database:**
    ```bash
-   docker-compose up -d postgres postgres_test
+   docker-compose up -d mongodb
    ```
 
-4. **Install backend dependencies, migrate, and seed:**
+4. **Install backend dependencies, push schema, and seed:**
    ```bash
    cd backend
    npm install
-   npx prisma migrate deploy
+   npx prisma db push
    npm run seed
    npm run start:dev
    ```
@@ -151,17 +151,17 @@ In modern Single Page Application (SPA) architectures, client token storage pres
 
 ---
 
-### Option B: Native Setup (Local Node & PostgreSQL)
+### Option B: Native Setup (Local Node & MongoDB)
 
-1. **Provision PostgreSQL databases:**
-   Create two local databases: `cardealership` (development) and `cardealership_test` (e2e testing).
+1. **Provision MongoDB instance:**
+   Ensure MongoDB 7.0+ or 9.0 is running locally with replica set enabled (e.g. `mongod --port 27017 --dbpath <data_dir> --replSet rs0`). Run `rs.initiate()` if starting a new replica set.
 2. **Configure `.env`:**
-   Adjust `DATABASE_URL` and `TEST_DATABASE_URL` to point to your local PostgreSQL port and credentials.
-3. **Execute migrations & seed:**
+   Adjust `DATABASE_URL` and `TEST_DATABASE_URL` in `backend/.env` and `backend/.env.test` (`mongodb://127.0.0.1:27017/cardealership?replicaSet=rs0&directConnection=true`).
+3. **Execute schema push & seed:**
    ```bash
    cd backend
    npm install
-   npx prisma migrate dev --name init
+   npx prisma db push
    npm run seed
    ```
 4. **Run applications:**

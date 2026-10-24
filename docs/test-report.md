@@ -75,7 +75,7 @@ Time:        32.358 s
 
 ## 3. Backend E2E Test Suite Output
 
-Executed against dedicated PostgreSQL test database:
+Executed against dedicated MongoDB test database (`cardealership_test`):
 
 ```text
 > car-dealership-inventory-backend@1.0.0 test:e2e

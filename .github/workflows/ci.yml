@@ -12,30 +12,12 @@ jobs:
     runs-on: ubuntu-latest
 
     services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgrespassword
-          POSTGRES_DB: cardealership
+      mongodb:
+        image: mongo:7.0
         ports:
-          - 5432:5432
+          - 27017:27017
         options: >-
-          --health-cmd pg_isready
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 5
-
-      postgres_test:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgrespassword
-          POSTGRES_DB: cardealership_test
-        ports:
-          - 5433:5432
-        options: >-
-          --health-cmd pg_isready
+          --health-cmd "mongosh --eval 'db.adminCommand({ ping: 1 }).ok'"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 5
@@ -55,28 +37,37 @@ jobs:
         working-directory: ./backend
         run: npm ci
 
-      - name: Run Prisma Generate & Migrations
+      - name: Run Prisma Generate & DB Push
         working-directory: ./backend
         env:
-          DATABASE_URL: postgresql://postgres:postgrespassword@localhost:5432/cardealership?schema=public
-          TEST_DATABASE_URL: postgresql://postgres:postgrespassword@localhost:5433/cardealership_test?schema=public
+          DATABASE_URL: mongodb://127.0.0.1:27017/cardealership?directConnection=true
+          TEST_DATABASE_URL: mongodb://127.0.0.1:27017/cardealership_test?directConnection=true
         run: |
           npx prisma generate
-          DATABASE_URL=$DATABASE_URL npx prisma migrate deploy
-          DATABASE_URL=$TEST_DATABASE_URL npx prisma migrate deploy
+          DATABASE_URL=$DATABASE_URL npx prisma db push
+          DATABASE_URL=$TEST_DATABASE_URL npx prisma db push
 
       - name: Backend Lint Check
         working-directory: ./backend
         run: npm run lint
 
-      - name: Backend Unit & E2E Tests with Coverage
+      - name: Backend Unit Tests with Coverage
         working-directory: ./backend
         env:
-          DATABASE_URL: postgresql://postgres:postgrespassword@localhost:5432/cardealership?schema=public
-          TEST_DATABASE_URL: postgresql://postgres:postgrespassword@localhost:5433/cardealership_test?schema=public
+          DATABASE_URL: mongodb://127.0.0.1:27017/cardealership?directConnection=true
+          TEST_DATABASE_URL: mongodb://127.0.0.1:27017/cardealership_test?directConnection=true
           JWT_SECRET: ci-test-secret-key-at-least-32-characters
           JWT_EXPIRES_IN: 1d
         run: npm run test:cov
+
+      - name: Backend E2E Tests
+        working-directory: ./backend
+        env:
+          DATABASE_URL: mongodb://127.0.0.1:27017/cardealership_test?directConnection=true
+          TEST_DATABASE_URL: mongodb://127.0.0.1:27017/cardealership_test?directConnection=true
+          JWT_SECRET: ci-test-secret-key-at-least-32-characters
+          JWT_EXPIRES_IN: 1d
+        run: npm run test:e2e
 
       - name: Backend Build
         working-directory: ./backend

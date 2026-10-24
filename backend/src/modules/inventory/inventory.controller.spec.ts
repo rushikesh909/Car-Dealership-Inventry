@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { InventoryController } from './inventory.controller';
 import { InventoryService } from './inventory.service';
-import { Decimal } from '@prisma/client/runtime/library';
 
 describe('InventoryController', () => {
   let controller: InventoryController;
@@ -12,7 +11,7 @@ describe('InventoryController', () => {
     make: 'Honda',
     model: 'Civic',
     category: 'Sedan',
-    price: new Decimal(25000.0),
+    price: 25000.0,
     quantity: 3,
     createdAt: new Date(),
     updatedAt: new Date(),

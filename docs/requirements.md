@@ -4,9 +4,9 @@
 The Car Dealership Inventory System is a full-stack, production-grade web application designed to manage dealership vehicle inventory, facilitate vehicle purchasing with race-safe concurrency controls, and provide role-based administrative capabilities (adding, editing, deleting, restocking vehicles).
 
 The system consists of:
-- **Backend**: NestJS (Node.js 20+ & TypeScript), Prisma ORM, PostgreSQL database, Passport/JWT authentication, RBAC, Rate limiting, Helmet, and strict validation.
+- **Backend**: NestJS (Node.js 20+ & TypeScript), Prisma ORM, MongoDB database (with Replica Set), Passport/JWT authentication, RBAC, Rate limiting, Helmet, and strict validation.
 - **Frontend**: React 18 (Vite, TypeScript, Tailwind CSS), React Router 6, React Hook Form, Axios with interceptors, responsive and accessible UI with toast notifications.
-- **Infrastructure & Quality**: Docker Compose multi-service setup (PostgreSQL app & test instances), Jest + Supertest integration testing, Vitest + React Testing Library component testing, GitHub Actions CI.
+- **Infrastructure & Quality**: Docker Compose service (MongoDB instance with replica set initialization), Jest + Supertest integration testing against MongoDB test database, Vitest + React Testing Library component testing, GitHub Actions CI.
 
 ---
 

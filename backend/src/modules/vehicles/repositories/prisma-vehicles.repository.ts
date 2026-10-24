@@ -20,7 +20,7 @@ export class PrismaVehiclesRepository implements IVehicleRepository {
         make: data.make,
         model: data.model,
         category: data.category,
-        price: new Prisma.Decimal(data.price),
+        price: data.price,
         quantity: data.quantity,
       },
     });
@@ -75,10 +75,10 @@ export class PrismaVehiclesRepository implements IVehicleRepository {
     if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
       where.price = {};
       if (filters.minPrice !== undefined) {
-        where.price.gte = new Prisma.Decimal(filters.minPrice);
+        where.price.gte = filters.minPrice;
       }
       if (filters.maxPrice !== undefined) {
-        where.price.lte = new Prisma.Decimal(filters.maxPrice);
+        where.price.lte = filters.maxPrice;
       }
     }
 
@@ -114,8 +114,7 @@ export class PrismaVehiclesRepository implements IVehicleRepository {
     if (data.make !== undefined) updateData.make = data.make;
     if (data.model !== undefined) updateData.model = data.model;
     if (data.category !== undefined) updateData.category = data.category;
-    if (data.price !== undefined)
-      updateData.price = new Prisma.Decimal(data.price);
+    if (data.price !== undefined) updateData.price = data.price;
     if (data.quantity !== undefined) updateData.quantity = data.quantity;
 
     return this.prisma.vehicle.update({
