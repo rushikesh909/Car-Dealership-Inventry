@@ -4,12 +4,7 @@ A full-stack web application for managing car dealership inventory, built with N
 
 ---
 
-## Live Demo
 
-- **Frontend App:** [Add live URL here - e.g. Vercel / Netlify]
-- **Backend API & Swagger:** [Add live API URL here - e.g. Render / Railway]
-
----
 
 ## Project Overview
 
