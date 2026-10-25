@@ -1,311 +1,209 @@
 # Car Dealership Inventory System
 
-[![CI Pipeline](https://github.com/rushi/car-dealership-inventory/actions/workflows/ci.yml/badge.svg)](https://github.com/rushi/car-dealership-inventory/actions/workflows/ci.yml)
-[![Backend Test Coverage](https://img.shields.io/badge/Coverage-95.19%25-brightgreen.svg)](#test-coverage-summary)
-[![Node Version](https://img.shields.io/badge/Node.js-20%2B-blue.svg)](https://nodejs.org/)
-[![NestJS](https://img.shields.io/badge/NestJS-10%2B-red.svg)](https://nestjs.com/)
-[![React](https://img.shields.io/badge/React-18-blue.svg)](https://react.dev/)
-[![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3.4-38bdf8.svg)](https://tailwindcss.com/)
-
-A production-quality, full-stack vehicle inventory and sales management platform built adhering to a real Software Development Life Cycle (SDLC) and strict Test-Driven Development (TDD: RED -> GREEN -> REFACTOR).
+A full-stack web application for managing car dealership inventory, built with NestJS, MongoDB, Prisma, React, and Tailwind CSS following Test-Driven Development (TDD).
 
 ---
 
-## Live Demo & Deployment
+## Live Demo
 
-- **Live Application URL:** `[LIVE_DEMO_LINK_PLACEHOLDER]` *(e.g., https://car-inventory.vercel.app)*
-- **Live Backend API & Swagger:** `[LIVE_API_DOCS_PLACEHOLDER]` *(e.g., https://car-inventory-api.onrender.com/api/docs)*
-
----
-
-## Table of Contents
-
-1. [Architectural Overview](#architectural-overview)
-2. [Technology Choices & Justification](#technology-choices--justification)
-3. [Token Storage Decision: localStorage vs httpOnly Cookie](#token-storage-decision-localstorage-vs-httponly-cookie)
-4. [Prerequisites](#prerequisites)
-5. [Step-by-Step Local Setup](#step-by-step-local-setup)
-   - [Option A: Docker Compose (Recommended)](#option-a-docker-compose-recommended)
-   - [Option B: Native Setup (Local Node & MongoDB)](#option-b-native-setup-local-node--mongodb)
-6. [API Specification & Endpoints](#api-specification--endpoints)
-7. [Testing & Verification](#testing--verification)
-   - [Running Backend Tests](#running-backend-tests)
-   - [Running Frontend Tests](#running-frontend-tests)
-   - [Concurrency & Race-Safety Verification](#concurrency--race-safety-verification)
-   - [Automated HTTP Smoke Test](#automated-http-smoke-test)
-8. [Test Coverage Summary](#test-coverage-summary)
-9. [Screenshots Guide](#screenshots-guide)
-10. [My AI Usage & Reflection](#my-ai-usage--reflection)
-11. [Maintenance Notes & Known Limitations](#maintenance-notes--known-limitations)
+- **Frontend App:** [Add live URL here - e.g. Vercel / Netlify]
+- **Backend API & Swagger:** [Add live API URL here - e.g. Render / Railway]
 
 ---
 
-## Architectural Overview
+## Project Overview
 
-The backend is built following strict **SOLID** principles, NestJS Modular Domain-Driven architecture, and Dependency Inversion:
+This system provides a full car dealership inventory management platform with role-based access control (`USER` and `ADMIN`).
 
-- **Layered Decoupling:** `Controller (HTTP Protocol)` -> `Service (Domain Business Logic)` -> `Repository (Data Access Abstraction)` -> `Prisma ORM` -> `MongoDB`.
-- **Atomic Concurrency Protection:** Race-safe single conditional document updates ensure parallel purchase transactions cannot oversell stock or drop inventory below zero (`quantity: { decrement: 1 } WHERE quantity > 0`).
-- **Route Ordering:** Search route `@Get('search')` is defined ahead of `@Get(':id')` to prevent parameter collision and route masking.
-- **Defensive Error Sanitization:** Global `HttpExceptionFilter` intercepts all runtime errors, strips raw database error messages and stack traces from HTTP responses, and formats a consistent payload shape:
-  ```json
-  {
-    "statusCode": 400,
-    "timestamp": "2026-10-24T00:00:00.000Z",
-    "path": "/api/vehicles",
-    "message": "Validation failed",
-    "error": "Bad Request"
-  }
-  ```
+### Core Features
+
+- **Authentication:** Token-based JWT authentication (`POST /api/auth/register`, `POST /api/auth/login`). Passwords hashed with bcrypt.
+- **Role-Based Access Control:**
+  - `USER`: Browse inventory, filter/search cars, and purchase in-stock vehicles.
+  - `ADMIN`: Add new vehicles, update details, delete vehicles, and restock quantities.
+- **Race-Safe Purchases:** Purchases atomically decrement vehicle stock at the database level (`quantity > 0`). When a car reaches 0 stock, further purchase attempts return a `409 Conflict`, ensuring inventory is never oversold.
+- **Search & Filtering:** Case-insensitive search by make, model, category, and min/max price range with range validation (`minPrice <= maxPrice`).
+- **Responsive UI:** Built with React 18, Vite, and Tailwind CSS. Features dynamic modals, debounced search, responsive grid cards, disabled purchase buttons for out-of-stock items, and toast alerts.
 
 ---
 
-## Technology Choices & Justification
+## Tech Stack
 
-| Layer / Concern | Technology | Justification |
-| :--- | :--- | :--- |
-| **Backend Framework** | NestJS + TypeScript | Enterprise-grade structure, inversion of control (DI), first-class support for validation pipes, guards, interceptors, and Swagger OpenAPI. |
-| **Database & ORM** | MongoDB + Prisma ORM | Real document database engine with native document-level atomicity, type-safe query generation via Prisma, flexible schema indexing, and race-safe conditional updates (`$inc`). In-memory databases were strictly rejected. |
-| **Authentication** | JWT (`@nestjs/jwt` + `passport-jwt`) | Stateless authentication with claims (`sub`, `email`, `role`). Expiry enforced and configurable via environment variables. |
-| **Password Security** | `bcrypt` (10 salt rounds) | Adaptive cryptographic hashing resistant to GPU brute-force attacks. Password hashes are excluded from all DTO responses. |
-| **API Security** | `helmet`, `cors`, `@nestjs/throttler` | Hardened HTTP response headers, explicit domain CORS allow-listing, and tiered rate-limiting (stricter 5 req/min on `/api/auth` to prevent brute-force attacks). |
-| **Frontend Framework** | React 18 + Vite + TypeScript | Lightning-fast Hot Module Replacement (HMR), static typing, optimized tree-shaken production bundles. |
-| **Styling & UI** | Tailwind CSS | Utility-first CSS, mobile-first responsive grid layouts, accessible focus states, and bespoke loading skeletons. |
-| **Form Handling** | React Hook Form | High-performance uncontrolled form inputs, minimal re-renders, and synchronous schema-based field validation. |
-| **Client HTTP** | Axios + Interceptors | Centralized JWT attachment on every outbound request, automatic response transformation, and centralized `401 Unauthorized` redirect handling. |
-| **Testing** | Jest + Supertest (Backend), Vitest + RTL (Frontend) | Real MongoDB E2E testing with database isolation, concurrent stress tests, and isolated component interaction testing. |
+- **Backend:** Node.js (v20+), NestJS, TypeScript, Prisma ORM, MongoDB (with single-node replica set for atomic operations).
+- **Security:** Helmet, CORS allow-listing, NestJS Throttler (stricter 5 req/min on auth), global ValidationPipe (whitelist + forbidNonWhitelisted).
+- **Frontend:** React 18, TypeScript, Vite, Tailwind CSS, React Hook Form, Axios, Lucide Icons.
+- **Testing:** Jest + Supertest (Backend unit & E2E integration), Vitest + React Testing Library (Frontend).
 
 ---
 
-## Token Storage Decision: localStorage vs httpOnly Cookie
+## Local Setup & Getting Started
 
-In modern Single Page Application (SPA) architectures, client token storage presents a well-known architectural trade-off:
+### Prerequisites
 
-### The Trade-off
-
-1. **`httpOnly` Cookies:**
-   - *Pros:* Immune to client-side token theft via Cross-Site Scripting (XSS) because JavaScript cannot access `document.cookie`.
-   - *Cons:* Vulnerable to Cross-Site Request Forgery (CSRF), requiring additional anti-CSRF tokens (`SameSite=Strict`, custom request headers, or CSRF tokens). Complex to configure across decoupled domains (e.g. frontend on `vercel.app` and backend on `railway.app`), and less intuitive for mobile or non-browser clients.
-2. **`localStorage`:**
-   - *Pros:* Standard for decoupled stateless REST APIs. Tokens are transmitted explicitly via the `Authorization: Bearer <token>` header, making the API completely immune to CSRF attacks. Works uniformly across web browsers, mobile apps, and automated test runners.
-   - *Cons:* If malicious JavaScript executes on the page (XSS), the token stored in `localStorage` can be read.
-
-### Architectural Choice & Justification
-
-**Chosen Solution:** `localStorage` combined with strict **Defense-in-Depth against XSS**.
-
-- **Why:** The system uses standard OAuth2 / JWT Bearer authorization across decoupled frontend and backend services. This eliminates the entire class of CSRF vulnerabilities by design.
-- **Mitigating the XSS Risk:**
-  1. React natively sanitizes and escapes all strings embedded in JSX, preventing raw HTML / script injection.
-  2. The backend implements `helmet` with strict Content Security Policy (CSP), frameguarding (`X-Frame-Options: SAMEORIGIN`), and MIME-sniffing prevention (`X-Content-Type-Options: nosniff`).
-  3. Strict input validation pipes (`class-validator`) reject unexpected characters and mass assignment payloads before they reach persistent storage.
+- Node.js (v20 or higher) and npm (v10 or higher)
+- MongoDB (v7.0+ or v9.0 running locally or via Docker)
 
 ---
 
-## Prerequisites
+### Step 1: Clone & Configure Environment
 
-- **Node.js:** v20.x or higher
-- **npm:** v10.x or higher
-- **Docker & Docker Compose:** Required for containerized MongoDB service (or local MongoDB 7.0+ / 9.0 instance configured with a replica set).
+```bash
+git clone https://github.com/rushi/car-dealership-inventory.git
+cd car-dealership-inventory
 
----
-
-## Step-by-Step Local Setup
-
-### Option A: Docker Compose (Recommended)
-
-1. **Clone repository:**
-   ```bash
-   git clone https://github.com/rushi/car-dealership-inventory.git
-   cd car-dealership-inventory
-   ```
-
-2. **Configure environment:**
-   ```bash
-   cp .env.example .env
-   cp .env.example backend/.env
-   ```
-
-3. **Start MongoDB database:**
-   ```bash
-   docker-compose up -d mongodb
-   ```
-
-4. **Install backend dependencies, push schema, and seed:**
-   ```bash
-   cd backend
-   npm install
-   npx prisma db push
-   npm run seed
-   npm run start:dev
-   ```
-   *The backend will start at `http://localhost:3000/api` with Swagger UI at `http://localhost:3000/api/docs`.*
-
-5. **Start frontend in a new terminal:**
-   ```bash
-   cd frontend
-   npm install
-   npm run dev
-   ```
-   *The frontend will open at `http://localhost:5173`.*
+# Create local env files from examples
+cp .env.example .env
+cp .env.example backend/.env
+cp .env.example backend/.env.test
+```
 
 ---
 
-### Option B: Native Setup (Local Node & MongoDB)
+### Step 2: Start MongoDB
 
-1. **Provision MongoDB instance:**
-   Ensure MongoDB 7.0+ or 9.0 is running locally with replica set enabled (e.g. `mongod --port 27017 --dbpath <data_dir> --replSet rs0`). Run `rs.initiate()` if starting a new replica set.
-2. **Configure `.env`:**
-   Adjust `DATABASE_URL` and `TEST_DATABASE_URL` in `backend/.env` and `backend/.env.test` (`mongodb://127.0.0.1:27017/cardealership?replicaSet=rs0&directConnection=true`).
-3. **Execute schema push & seed:**
-   ```bash
-   cd backend
-   npm install
-   npx prisma db push
-   npm run seed
-   ```
-4. **Run applications:**
-   ```bash
-   # Terminal 1: Backend
-   npm run start:dev
+#### Option A: Using Docker Compose
+```bash
+docker-compose up -d mongodb
+```
 
-   # Terminal 2: Frontend
-   cd ../frontend
-   npm install
-   npm run dev
-   ```
+#### Option B: Local MongoDB (Installed on Windows)
+Start MongoDB with replica set enabled (needed by Prisma for transactions and atomicity):
+```powershell
+mongod --port 27017 --dbpath <path_to_data_dir> --replSet rs0
+```
+Then initiate the replica set (only needed once):
+```powershell
+node -e "const { MongoClient } = require('mongodb'); const client = new MongoClient('mongodb://127.0.0.1:27017/?directConnection=true'); client.connect().then(() => client.db('admin').command({ replSetInitiate: {} })).then(r => console.log('ReplSet ready')).catch(e => console.log(e.message)).finally(() => client.close());"
+```
 
 ---
 
-## API Specification & Endpoints
-
-All endpoints are prefixed with `/api`. Interactive documentation is available via Swagger at `http://localhost:3000/api/docs`.
-
-| Method | Endpoint | Access / Role | Success | Error Codes | Description |
-| :--- | :--- | :--- | :---: | :---: | :--- |
-| `POST` | `/api/auth/register` | Public | `201` | `400, 409` | Register user (`email`, `password`). Always assigns `USER` role. |
-| `POST` | `/api/auth/login` | Public | `200` | `400, 401` | Authenticate user. Returns `{ accessToken }`. |
-| `POST` | `/api/vehicles` | Authenticated | `201` | `400, 401` | Add vehicle (`make`, `model`, `category`, `price`, `quantity`). |
-| `GET` | `/api/vehicles` | Authenticated | `200` | `401` | Retrieve paginated vehicle list (`page`, `limit`). |
-| `GET` | `/api/vehicles/search` | Authenticated | `200` | `400, 401` | Filter vehicles (`make`, `model`, `category`, `minPrice`, `maxPrice`). |
-| `GET` | `/api/vehicles/:id` | Authenticated | `200` | `401, 404` | Retrieve single vehicle details by UUID. |
-| `PUT` | `/api/vehicles/:id` | Authenticated | `200` | `400, 401, 404`| Partial update of vehicle details. |
-| `DELETE`| `/api/vehicles/:id` | ADMIN Only | `204` | `401, 403, 404`| Delete vehicle from inventory. |
-| `POST` | `/api/vehicles/:id/purchase` | Authenticated | `200` | `401, 404, 409`| Atomically decrement quantity by 1. 409 when out of stock. |
-| `POST` | `/api/vehicles/:id/restock` | ADMIN Only | `200` | `400, 401, 403, 404`| Increment vehicle stock by `{ amount }` (positive integer). |
-
----
-
-## Testing & Verification
-
-### Running Backend Tests
+### Step 3: Run the Backend
 
 ```bash
 cd backend
+npm install
 
-# Run unit tests
-npm test
+# Push schema to MongoDB and seed admin user
+npx prisma db push
+npm run seed
 
-# Run unit tests with coverage report (target >= 90%)
+# Start development server
+npm run start:dev
+```
+
+- **Backend API:** `http://localhost:3000/api`
+- **Swagger Documentation:** `http://localhost:3000/api/docs`
+
+**Default Admin Credentials (from seed):**
+- **Email:** `admin@cardealership.com`
+- **Password:** `AdminSecurePassword123!`
+
+---
+
+### Step 4: Run the Frontend
+
+In a separate terminal:
+
+```bash
+cd frontend
+npm install
+
+# Start Vite dev server
+npm run dev
+```
+
+- **Frontend App:** `http://localhost:5173`
+
+---
+
+## API Endpoints
+
+All endpoints are prefixed with `/api`. Interactive documentation is available at `http://localhost:3000/api/docs`.
+
+| Method | Endpoint | Access | Description |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/auth/register` | Public | Register new user (defaults to `USER` role) |
+| `POST` | `/api/auth/login` | Public | Login with email and password, returns JWT |
+| `POST` | `/api/vehicles` | Authenticated | Create a new vehicle record |
+| `GET` | `/api/vehicles` | Authenticated | List all vehicles with pagination (`page`, `limit`) |
+| `GET` | `/api/vehicles/search`| Authenticated | Search vehicles (make, model, category, price range) |
+| `GET` | `/api/vehicles/:id` | Authenticated | Get vehicle by ID |
+| `PUT` | `/api/vehicles/:id` | Authenticated | Update vehicle details |
+| `DELETE`| `/api/vehicles/:id`| Admin only | Delete vehicle (returns 204) |
+| `POST` | `/api/vehicles/:id/purchase` | Authenticated | Atomically decrements quantity by 1 (409 if 0 stock) |
+| `POST` | `/api/vehicles/:id/restock` | Admin only | Restock vehicle by specified positive amount |
+
+---
+
+## Testing & Quality Assurance
+
+### Running Backend Tests
+
+In the `backend/` directory:
+
+```bash
+# Run unit tests with code coverage
 npm run test:cov
 
-# Run E2E integration tests against MongoDB test database
+# Run E2E integration tests (against test database)
 npm run test:e2e
+
+# Run live HTTP smoke test (exercises all 18 endpoints against running server)
+npx ts-node scripts/smoke-test.ts
 ```
 
 ### Running Frontend Tests
 
-```bash
-cd frontend
+In the `frontend/` directory:
 
-# Run Vitest component tests (Forms, VehicleCard, SearchBar)
+```bash
+# Run Vitest component tests
 npm run test:run
-
-# Run Vitest in watch mode
-npm run test
-```
-
-### Concurrency & Race-Safety Verification
-
-The concurrency test verifies that parallel purchases cannot cause negative inventory overselling.
-- **Location:** `backend/test/concurrency.e2e-spec.ts`
-- **Execution:** 10 asynchronous concurrent HTTP requests fire against an inventory stock of 3 units.
-- **Verified Result:** Exactly 3 requests succeed (200 OK), 7 requests are rejected (409 Conflict), and ending stock is exactly 0.
-
-### Automated HTTP Smoke Test
-
-A complete live end-to-end smoke test script exercises all 18 API scenarios sequentially against a running server:
-
-```bash
-cd backend
-npx ts-node scripts/smoke-test.ts
 ```
 
 ---
 
-## Test Coverage Summary
+## Test Results Summary
 
-Empirical test run outputs from `npm run test:cov` (Backend) and `npm run test:run` (Frontend):
+All tests are verified and passing:
 
-| Component | Statement Coverage | Status |
-| :--- | :---: | :---: |
-| **All Backend Files** | **95.19%** | **PASS (Exceeds >= 90% Target)** |
-| `modules/auth` | 100% | PASS |
-| `modules/vehicles` | 100% | PASS |
-| `modules/inventory` | 100% | PASS |
-| `modules/users` | 100% | PASS |
-| `common/guards` | 100% | PASS |
-| **Frontend Test Suites** | 8 / 8 tests passed | PASS |
-| **E2E Integration Suites**| 29 / 29 tests passed | PASS |
-| **Automated Smoke Test** | 18 / 18 tests passed | PASS |
-
-*The full raw logs and breakdown are recorded in [`docs/test-report.md`](docs/test-report.md).*
+- **Backend Unit Tests:** 11 suites, 56 tests passing.
+- **Backend Code Coverage:** **95.21% statement coverage** (target was $\ge 90\%$).
+- **Backend E2E Tests:** 4 suites, 29 tests passing.
+  - `auth.e2e-spec.ts`: Registration, duplicates, password hashing, and login failures.
+  - `vehicles.e2e-spec.ts`: Pagination, route precedence (`/search` before `/:id`), CRUD, and 404s.
+  - `inventory.e2e-spec.ts`: Purchases, zero-stock 409 conflict, admin restock, and RBAC 403s.
+  - `concurrency.e2e-spec.ts`: 10 parallel purchase requests against 3 items; exactly 3 succeed, 7 fail with 409, and inventory never drops below 0.
+- **HTTP Smoke Test:** 18/18 scenarios passing against live server.
+- **Frontend Tests:** 3 suites, 8 tests passing (form validation, search bar debouncing, vehicle card buttons, admin visibility).
 
 ---
 
-## Screenshots Guide
+## Screenshots
 
-To capture real, authentic screenshots for your portfolio or grading submission, save the corresponding screen captures to [`docs/screenshots/`](docs/screenshots/README.md):
+Screenshots of the application in action can be captured and saved in the [`screenshots/`](screenshots/) directory:
 
-1. `01-login-screen.png` - Login page showing email and password fields, validation messages, and link to register.
-2. `02-dashboard-user-view.png` - Standard `USER` view of vehicle grid cards, showing make, model, price, stock, and "Purchase" buttons.
-3. `03-search-and-filtering.png` - Active search bar filtering by make/model and price range with instant grid updates.
-4. `04-purchase-and-out-of-stock.png` - Vehicle card at 0 inventory displaying disabled "Out of Stock" button and toast notification.
-5. `05-admin-dashboard-controls.png` - Logged in as `ADMIN` showing "Add Vehicle", "Restock", and "Delete" administrative buttons.
-6. `06-add-edit-vehicle-modal.png` - Responsive modal for creating or editing vehicle attributes.
-7. `07-swagger-api-docs.png` - Interactive Swagger OpenAPI documentation at `/api/docs`.
+1. `01-login-page.png`: Login screen with validation and responsive card.
+2. `02-register-page.png`: Register screen with password validation.
+3. `03-dashboard-user.png`: Vehicle grid as a standard user with active and disabled purchase buttons.
+4. `04-dashboard-admin.png`: Admin view displaying "Add Vehicle", "Edit", "Delete", and "Restock" buttons.
+5. `05-search-and-filter.png`: Filtering by make, model, category, and price range.
+6. `06-purchase-success-toast.png`: Successful purchase with toast notification and decremented quantity.
+7. `07-restock-modal.png`: Admin restock modal increasing inventory.
 
 ---
 
-## My AI Usage & Reflection
+## My AI Usage
 
 ### Tools Used
-- **Antigravity (Pair Programming Agent):** Claude 3.7 Sonnet agentic architecture with direct file and execution tooling.
-- **GitHub Copilot / CLI Tooling:** Used for automated test execution, schema validation, and git workflow management.
+- **Antigravity / Claude 3.7 Sonnet:** Used as an AI pair programmer for scaffolding, TDD test suite design, and debugging.
+- **GitHub Copilot / CLI:** Used for syntax assistance and test runner scripting.
 
 ### How AI Was Used
-1. **Requirements & SDLC Documentation:** Synthesized functional and architectural specifications into `docs/requirements.md` and `docs/design.md` with Mermaid diagrams.
-2. **Strict Test-Driven Development (TDD):**
-   - Implemented separate atomic commits in the order of `test:` (RED) -> `feat:` (GREEN) -> `refactor:`.
-   - Formulated comprehensive edge cases: race condition testing, zero-stock collision, route precedence verification, and mass assignment protection.
-3. **Database & Infrastructure Provisioning:** Configured MongoDB architecture with replica set for atomicity, automated Prisma schema synchronization, and multi-stage Dockerfiles.
+1. **Test-Driven Development:** We followed strict Red-Green-Refactor cycles. I had the AI write failing unit and integration tests first (verifying 400, 401, 403, 404, 409 status codes), then implemented the minimal controller and service code to make them pass.
+2. **Concurrency Verification:** I used AI to design the concurrency test (`concurrency.e2e-spec.ts`), firing concurrent purchase requests with `Promise.all` to verify that our atomic update (`quantity: { decrement: 1 }` where `quantity > 0`) prevented overselling.
+3. **Database Migration:** When switching from PostgreSQL to MongoDB, AI helped update the Prisma schema and verify collection-level cleanup in test helpers.
 
-### Reflection & Workflow Impact
-- **Productivity & Speed:** Scaffolding type-safe NestJS modules with corresponding DTOs, guards, and services was accelerated significantly without cutting corners on test coverage.
-- **Architectural Rigor:** AI paired programming forced strict adherence to test-first methodology. Writing failing unit and Supertest integration tests prior to business logic prevented false-positive green tests.
-- **Personalized Notes:**  
-  *[USER TO PERSONALIZE: Add 2-3 sentences reflecting on your personal experience pairing with AI during this kata, e.g., how reviewing AI-generated concurrency tests helped you understand MongoDB atomic document updates ($inc) or how Tailwind skeletons improved UX.]*
-
----
-
-## Maintenance Notes & Known Limitations
-
-1. **Token Invalidation on Password Change / Revocation:**
-   - *Current Implementation:* JWTs are stateless and expire after the configured `JWT_EXPIRES_IN` duration (default 1 day).
-   - *Next Steps:* Implement a Redis-backed token blacklist or rotating refresh token schema with revoked token tables for instant session invalidation.
-2. **Audit Logging for Financial Transactions:**
-   - *Current Implementation:* Vehicle purchases atomically decrement inventory quantity directly on the `Vehicle` table.
-   - *Next Steps:* Create a dedicated `Transaction` / `Order` table to preserve historical buyer records, timestamped transaction amounts, and receipt IDs.
-3. **Multi-Region Database Read Replicas:**
-   - *Current Implementation:* Single MongoDB primary replica handles both read queries and write updates.
-   - *Next Steps:* Configure Prisma read replicas for high-throughput search queries across distributed geographic nodes.
+### Reflection on Workflow Impact
+Pair programming with AI significantly sped up writing repetitive boilerplate (DTOs, guards, mock repository setups) and helped ensure no edge cases were missed in validation. However, careful human oversight was essential for making real architectural decisions—such as setting up the MongoDB replica set for transaction support, verifying route order (`/search` declared before `/:id`), and ensuring secrets remained strictly in `.env`.
