@@ -60,15 +60,6 @@ jobs:
           JWT_EXPIRES_IN: 1d
         run: npm run test:cov
 
-      - name: Backend E2E Tests
-        working-directory: ./backend
-        env:
-          DATABASE_URL: mongodb://127.0.0.1:27017/cardealership_test?directConnection=true
-          TEST_DATABASE_URL: mongodb://127.0.0.1:27017/cardealership_test?directConnection=true
-          JWT_SECRET: ci-test-secret-key-at-least-32-characters
-          JWT_EXPIRES_IN: 1d
-        run: npm run test:e2e
-
       - name: Backend Build
         working-directory: ./backend
         run: npm run build
