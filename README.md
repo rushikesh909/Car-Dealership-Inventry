@@ -141,8 +141,7 @@ In the `backend/` directory:
 # Run unit tests with code coverage
 npm run test:cov
 
-# Run E2E integration tests (against test database)
-npm run test:e2e
+
 
 # Run live HTTP smoke test (exercises all 18 endpoints against running server)
 npx ts-node scripts/smoke-test.ts
